@@ -1,109 +1,109 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Clock, AlertTriangle, Pill } from "lucide-react";
+import { Clock } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type AppState = "normal" | "upcoming" | "buzzing" | "missed";
+type AppState = "normal" | "upcoming" | "buzzing";
 
 const supplies = [
-  { name: "Heart Med", count: 12 },
-  { name: "Vitamin C", count: 30 },
-  { name: "Joint Supp.", count: 8 },
-];
-
-const states: { key: AppState; label: string }[] = [
-  { key: "normal", label: "Normal" },
-  { key: "upcoming", label: "Upcoming" },
-  { key: "buzzing", label: "Buzzing" },
-  { key: "missed", label: "Missed" },
+  { name: "Heart Med", count: "14 pills" },
+  { name: "Vitamin C", count: "30" },
+  { name: "Joint Supp.", count: "20" },
 ];
 
 function Index() {
   const [state, setState] = useState<AppState>("normal");
+  const [missed, setMissed] = useState(true);
 
-  const cardClasses =
+  const cardBorder =
     state === "buzzing"
-      ? "border-red-500 animate-pulse shadow-[0_0_30px_rgba(239,68,68,0.5)]"
+      ? "border-red-500 animate-pulse shadow-[0_0_25px_rgba(239,68,68,0.5)]"
       : state === "upcoming"
-        ? "border-yellow-400 shadow-[0_0_25px_rgba(250,204,21,0.5)]"
-        : "border-teal-200";
+        ? "border-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.5)]"
+        : "border-teal-300";
+
+  const stateButtons: { key: AppState | "missed"; label: string; cls: string }[] = [
+    { key: "normal", label: "Normal", cls: "bg-green-200 border-green-400 text-green-900" },
+    { key: "upcoming", label: "Upcoming", cls: "bg-blue-200 border-blue-400 text-blue-900" },
+    { key: "buzzing", label: "Buzzing", cls: "bg-yellow-200 border-yellow-400 text-yellow-900" },
+    { key: "missed", label: "Missed", cls: "bg-red-200 border-red-400 text-red-900" },
+  ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      {state === "missed" && (
-        <div className="bg-red-600 text-white font-bold text-center py-4 px-4 flex items-center justify-center gap-2 tracking-wide">
-          <AlertTriangle className="w-5 h-5" />
+    <div className="min-h-screen bg-white flex flex-col font-sans">
+      {missed && (
+        <div className="bg-red-500 text-white font-bold text-center py-2 tracking-wide text-sm">
           MISSED DOSE ALERT
         </div>
       )}
 
-      <main className="flex-1 max-w-md w-full mx-auto px-5 py-8 space-y-8">
-        <header className="text-center">
-          <h1 className="text-2xl font-bold text-slate-900">PillPal</h1>
-          <p className="text-sm text-slate-500">Smart Pill Dispenser</p>
-        </header>
-
+      <main className="flex-1 max-w-md w-full mx-auto px-4 py-4 space-y-5">
         <section
-          className={`rounded-3xl bg-white border-2 overflow-hidden transition-all duration-300 ${cardClasses}`}
+          className={`rounded-2xl bg-white border-2 overflow-hidden transition-all duration-300 ${cardBorder}`}
         >
-          <div className="bg-teal-100 px-6 py-3 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-teal-700" />
-            <h2 className="text-teal-800 font-semibold">Your Next Dose:</h2>
+          <div className="bg-teal-300 px-4 py-2 flex items-center justify-center gap-2">
+            <h2 className="text-black font-semibold text-lg">Your Next Dose:</h2>
+            <Clock className="w-5 h-5 text-black" />
           </div>
-          <div className="px-6 py-8 text-center">
+          <div className="px-4 py-5 text-center">
             {state === "buzzing" ? (
               <p className="text-3xl font-extrabold text-red-600 tracking-wide">
                 DISPENSING NOW
               </p>
             ) : (
               <>
-                <p className="text-3xl font-extrabold text-black">Heart Med</p>
-                <p className="text-2xl font-bold text-black mt-2">1/2 pill</p>
-                <p className="text-xl font-bold text-black mt-2">at 14:15</p>
+                <p className="text-3xl font-extrabold text-black leading-tight">Heart Med</p>
+                <p className="text-2xl font-bold text-black leading-tight">(1/2 pill)</p>
+                <p className="text-2xl font-bold text-black leading-tight">at 14:15</p>
               </>
             )}
           </div>
         </section>
 
         <section>
-          <h3 className="text-lg font-bold text-slate-900 mb-3">Your Supplies</h3>
-          <ul className="space-y-2">
+          <h3 className="text-xl font-semibold text-black mb-2">Your Supplies</h3>
+          <ul className="divide-y divide-teal-200 border-y border-teal-200">
             {supplies.map((s) => (
               <li
                 key={s.name}
-                className="bg-teal-50 border border-teal-100 rounded-xl px-4 py-3 flex items-center justify-between"
+                className="bg-teal-100 px-4 py-2 flex items-center justify-between text-black"
               >
-                <span className="flex items-center gap-2 font-medium text-slate-800">
-                  <Pill className="w-4 h-4 text-teal-600" />
-                  {s.name}
-                </span>
-                <span className="text-slate-600 font-semibold">({s.count})</span>
+                <span className="font-medium">{s.name}</span>
+                <span className="text-teal-700 font-semibold">({s.count})</span>
               </li>
             ))}
           </ul>
         </section>
 
-        <section className="pt-4 border-t border-slate-200">
-          <p className="text-xs font-bold text-slate-500 tracking-widest mb-3">
+        <section>
+          <p className="text-xs font-bold text-black tracking-widest mb-2">
             SIMULATE STATES
           </p>
-          <div className="grid grid-cols-4 gap-2">
-            {states.map((s) => (
-              <button
-                key={s.key}
-                onClick={() => setState(s.key)}
-                className={`text-xs font-semibold py-2 rounded-lg border transition-colors ${
-                  state === s.key
-                    ? "bg-slate-900 text-white border-slate-900"
-                    : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
-                }`}
-              >
-                {s.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap gap-2">
+            {stateButtons.map((b) => {
+              const active =
+                b.key === "missed" ? missed : state === b.key;
+              return (
+                <button
+                  key={b.key}
+                  onClick={() => {
+                    if (b.key === "missed") {
+                      setMissed((m) => !m);
+                    } else {
+                      setState(b.key as AppState);
+                    }
+                  }}
+                  className={`text-xs font-semibold px-3 py-1 rounded-md border ${b.cls} ${
+                    active ? "ring-2 ring-offset-1 ring-black/40" : "opacity-90"
+                  }`}
+                >
+                  {b.label}
+                </button>
+              );
+            })}
           </div>
         </section>
       </main>
