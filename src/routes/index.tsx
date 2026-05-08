@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Clock } from "lucide-react";
+import { Check, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -14,9 +14,28 @@ const supplies = [
   { name: "Joint Supp.", count: "20" },
 ];
 
+type TakenEntry = { id: number; name: string; dose: string; time: string };
+
 function Index() {
   const [state, setState] = useState<AppState>("normal");
   const [missed, setMissed] = useState(true);
+  const [taken, setTaken] = useState<TakenEntry[]>([
+    { id: 1, name: "Heart Med", dose: "1/2 pill", time: "08:15" },
+    { id: 2, name: "Vitamin C", dose: "1 pill", time: "09:00" },
+  ]);
+
+  const markAsTaken = () => {
+    const now = new Date();
+    const time = `${String(now.getHours()).padStart(2, "0")}:${String(
+      now.getMinutes(),
+    ).padStart(2, "0")}`;
+    setTaken((t) => [
+      { id: Date.now(), name: "Heart Med", dose: "1/2 pill", time },
+      ...t,
+    ]);
+    setMissed(false);
+    setState("normal");
+  };
 
   const cardBorder =
     state === "buzzing"
@@ -61,6 +80,41 @@ function Index() {
               </>
             )}
           </div>
+          <div className="px-4 pb-4">
+            <button
+              onClick={markAsTaken}
+              className="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 rounded-lg transition-colors"
+            >
+              <Check className="w-4 h-4" />
+              Mark as Taken
+            </button>
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-xl font-semibold text-black mb-2">
+            Taken Today{" "}
+            <span className="text-teal-700 font-normal text-base">({taken.length})</span>
+          </h3>
+          {taken.length === 0 ? (
+            <p className="text-sm text-gray-500 italic">No doses logged yet.</p>
+          ) : (
+            <ul className="border border-gray-200 rounded-lg divide-y divide-gray-200 max-h-40 overflow-y-auto">
+              {taken.map((t) => (
+                <li
+                  key={t.id}
+                  className="px-3 py-2 flex items-center justify-between text-sm text-black"
+                >
+                  <span className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600" />
+                    <span className="font-medium">{t.name}</span>
+                    <span className="text-gray-500">· {t.dose}</span>
+                  </span>
+                  <span className="text-gray-600 font-mono">{t.time}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         <section>
