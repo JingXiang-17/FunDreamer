@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -14,15 +14,28 @@ const supplies = [
   { name: "Joint Supp.", count: "20" },
 ];
 
-type TakenEntry = { id: number; name: string; dose: string; time: string };
+type TakenEntry = { id: number; name: string; dose: string; time: string; date: string };
+
+const todayKey = () => new Date().toISOString().slice(0, 10);
 
 function Index() {
   const [state, setState] = useState<AppState>("normal");
   const [missed, setMissed] = useState(true);
   const [taken, setTaken] = useState<TakenEntry[]>([
-    { id: 1, name: "Heart Med", dose: "1/2 pill", time: "08:15" },
-    { id: 2, name: "Vitamin C", dose: "1 pill", time: "09:00" },
+    { id: 1, name: "Heart Med", dose: "1/2 pill", time: "08:15", date: todayKey() },
+    { id: 2, name: "Vitamin C", dose: "1 pill", time: "09:00", date: todayKey() },
   ]);
+
+  // Auto-purge entries from previous days at midnight rollover
+  useEffect(() => {
+    const prune = () => setTaken((t) => t.filter((e) => e.date === todayKey()));
+    prune();
+    const interval = setInterval(prune, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const todayTaken = taken.filter((t) => t.date === todayKey());
+  const lastDose = todayTaken[0];
 
   const markAsTaken = () => {
     const now = new Date();
@@ -30,7 +43,7 @@ function Index() {
       now.getMinutes(),
     ).padStart(2, "0")}`;
     setTaken((t) => [
-      { id: Date.now(), name: "Heart Med", dose: "1/2 pill", time },
+      { id: Date.now(), name: "Heart Med", dose: "1/2 pill", time, date: todayKey() },
       ...t,
     ]);
     setMissed(false);
@@ -92,28 +105,25 @@ function Index() {
         </section>
 
         <section>
-          <h3 className="text-xl font-semibold text-black mb-2">
-            Taken Today{" "}
-            <span className="text-teal-700 font-normal text-base">({taken.length})</span>
-          </h3>
-          {taken.length === 0 ? (
-            <p className="text-sm text-gray-500 italic">No doses logged yet.</p>
+          <h3 className="text-xl font-semibold text-black mb-2">Taken Today</h3>
+          {todayTaken.length === 0 ? (
+            <p className="text-sm text-gray-500 italic">No doses logged yet today.</p>
           ) : (
-            <ul className="border border-gray-200 rounded-lg divide-y divide-gray-200 max-h-40 overflow-y-auto">
-              {taken.map((t) => (
-                <li
-                  key={t.id}
-                  className="px-3 py-2 flex items-center justify-between text-sm text-black"
-                >
-                  <span className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-green-600" />
-                    <span className="font-medium">{t.name}</span>
-                    <span className="text-gray-500">· {t.dose}</span>
-                  </span>
-                  <span className="text-gray-600 font-mono">{t.time}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="border border-gray-200 rounded-lg px-4 py-3 flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2 text-black">
+                <Check className="w-4 h-4 text-green-600" />
+                <span className="font-semibold">{todayTaken.length}</span>
+                <span className="text-gray-600">
+                  {todayTaken.length === 1 ? "dose" : "doses"} taken
+                </span>
+              </div>
+              {lastDose && (
+                <span className="text-gray-600">
+                  Last: <span className="font-medium text-black">{lastDose.name}</span>{" "}
+                  <span className="font-mono">{lastDose.time}</span>
+                </span>
+              )}
+            </div>
           )}
         </section>
 
