@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Check, Clock } from "lucide-react";
+import { AlertTriangle, Check, Clock, X } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -21,6 +21,14 @@ const todayKey = () => new Date().toISOString().slice(0, 10);
 function Index() {
   const [state, setState] = useState<AppState>("normal");
   const [missed, setMissed] = useState(true);
+  const [showMissedDetails, setShowMissedDetails] = useState(false);
+
+  const missedDose = {
+    name: "Heart Med",
+    dose: "1/2 pill",
+    scheduled: "12:00",
+    missedFor: "2h 15m",
+  };
   const [taken, setTaken] = useState<TakenEntry[]>([
     { id: 1, name: "Heart Med", dose: "1/2 pill", time: "08:15", date: todayKey() },
     { id: 2, name: "Vitamin C", dose: "1 pill", time: "09:00", date: todayKey() },
@@ -65,11 +73,59 @@ function Index() {
   ];
 
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans">
+    <div className="min-h-screen bg-white flex flex-col font-sans relative">
       {missed && (
-        <div className="bg-red-500 text-white font-bold text-center py-2 tracking-wide text-sm">
-          MISSED DOSE ALERT
-        </div>
+        <>
+          <button
+            onClick={() => setShowMissedDetails((s) => !s)}
+            className="absolute top-0 inset-x-0 z-30 bg-red-500 hover:bg-red-600 text-white font-bold text-center py-2 tracking-wide text-sm flex items-center justify-center gap-2 shadow-md cursor-pointer"
+          >
+            <AlertTriangle className="w-4 h-4" />
+            MISSED DOSE ALERT
+            <span className="text-xs font-normal opacity-80 ml-1">
+              (tap for details)
+            </span>
+          </button>
+          {showMissedDetails && (
+            <div
+              className="absolute top-9 inset-x-0 z-30 mx-3 mt-1 bg-white border-2 border-red-500 rounded-xl shadow-xl p-4 text-left"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <h4 className="text-base font-bold text-red-600 flex items-center gap-1">
+                  <AlertTriangle className="w-4 h-4" />
+                  Missed Dose
+                </h4>
+                <button
+                  onClick={() => setShowMissedDetails(false)}
+                  className="text-gray-500 hover:text-black"
+                  aria-label="Close"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="text-sm text-black space-y-1">
+                <p>
+                  <span className="font-semibold">{missedDose.name}</span>{" "}
+                  <span className="text-gray-600">({missedDose.dose})</span>
+                </p>
+                <p className="text-gray-700">
+                  Scheduled at{" "}
+                  <span className="font-mono font-semibold">{missedDose.scheduled}</span>
+                </p>
+                <p className="text-red-600 font-medium">
+                  Overdue by {missedDose.missedFor}
+                </p>
+              </div>
+              <button
+                onClick={markAsTaken}
+                className="mt-3 w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 rounded-lg text-sm"
+              >
+                <Check className="w-4 h-4" />
+                Mark as Taken
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       <main className="flex-1 max-w-md w-full mx-auto px-4 py-4 space-y-5">
